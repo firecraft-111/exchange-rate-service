@@ -1,0 +1,43 @@
+# macOS
+.DS_Store
+
+# Editors/IDE
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+logs/
+
+# Env files
+.env
+.env.*
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Build directories
+bin/
+build/
+dist/
+coverage/
+cover/
+profile.out
+
+# Vendor dependencies
+vendor/
+
+# YAML configs (ignore all YAML by default)
+*.yaml
+*.yml
+
+# Allow example YAML configs to be committed
+!**/*example*.yaml
+!**/*example*.yml 
