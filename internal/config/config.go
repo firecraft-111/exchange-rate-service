@@ -19,7 +19,7 @@ type Config struct {
 
 var App *Config
 
-func LoadConfig(path string) error {
+func Load(path string) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("error reading config file: %w", err)

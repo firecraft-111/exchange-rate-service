@@ -3,33 +3,33 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
+	"time"
 
 	"github.com/firecraft-111/exchange-rate-service/internal/config"
+	"github.com/firecraft-111/exchange-rate-service/internal/handler"
 	"github.com/firecraft-111/exchange-rate-service/internal/infrastructure"
+	"github.com/firecraft-111/exchange-rate-service/internal/service"
 )
 
 func main() {
-	// http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-	// 	fmt.Fprintf(w, "pong")
-	// })
-
-	// fmt.Println("Server running on :8080")
-	// http.ListenAndServe(":8080", nil)
-
-	if err := config.LoadConfig("config.yaml"); err != nil {
-		log.Fatalf("Failed to initialize config: %v", err)
-		panic(err)
+	if err := config.Load("config.yaml"); err != nil {
+		log.Fatalf("failed to load config: %v", err)
 	}
 
-	base := "USD"
-	resp, err := infrastructure.FetchLatestRates(base)
-	if err != nil {
-		log.Fatal(err)
-	}
+	cache := infrastructure.NewRatesCache(time.Hour)
+	exchangeService := service.NewExchangeService(cache, time.Hour)
+	scheduler := service.NewScheduler(exchangeService, time.Hour)
 
-	fmt.Printf("Base: %s\nDate: %s\nRates:\n", resp.BaseCode, resp.TimeLastUpdateUTC)
+	scheduler.Start()
+	defer scheduler.Stop()
 
-	for k, v := range resp.ConversionRates {
-		fmt.Printf("%s: %.4f\n", k, v)
+	mux := http.NewServeMux()
+	handler.RegisterRoutes(mux, exchangeService)
+
+	port := config.App.Server.Port
+	log.Printf("Server starting on port %d..", port)
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), mux); err != nil {
+		log.Fatalf("Server failed: %v", err)
 	}
 }

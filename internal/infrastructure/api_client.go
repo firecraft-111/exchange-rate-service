@@ -7,17 +7,9 @@ import (
 	"time"
 
 	"github.com/firecraft-111/exchange-rate-service/internal/config"
+	"github.com/firecraft-111/exchange-rate-service/internal/domain"
 )
 
-var SupportedCurrencies = map[string]bool{
-	"USD": true,
-	"INR": true,
-	"EUR": true,
-	"JPY": true,
-	"GBP": true,
-}
-
-// ApiResponse models the ExchangeRate-API JSON response
 type ApiResponse struct {
 	Result            string             `json:"result"`
 	Documentation     string             `json:"documentation"`
@@ -28,12 +20,11 @@ type ApiResponse struct {
 	TimeNextUpdateUTC string             `json:"time_next_update_utc"`
 	BaseCode          string             `json:"base_code"`
 	ConversionRates   map[string]float64 `json:"conversion_rates"`
-	ErrorType         string             `json:"error-type,omitempty"` // only on error
+	ErrorType         string             `json:"error-type,omitempty"` 
 }
 
-// FetchLatestRates fetches latest exchange rates with base currency
 func FetchLatestRates(base string) (*ApiResponse, error) {
-	if !SupportedCurrencies[base] {
+	if !domain.SupportedCurrencies[base] {
 		return nil, fmt.Errorf("unsupported base currency: %s", base)
 	}
 
