@@ -57,7 +57,7 @@ func (s *Scheduler) Stop() {
 
 func (s *Scheduler) refreshAll() {
 	for base := range domain.SupportedCurrencies {
-		_, err := s.service.GetRates(base)
+		_, err := s.service.GetLatestRates(base)
 		if err != nil {
 			log.Printf("Scheduler: failed to refresh rates for %s: %v", base, err)
 		} else {

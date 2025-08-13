@@ -20,7 +20,7 @@ func NewExchangeService(cache *infrastructure.RatesCache, ttl time.Duration) *Ex
 	}
 }
 
-func (s *ExchangeService) GetRates(base string) (map[string]float64, error) {
+func (s *ExchangeService) GetLatestRates(base string) (map[string]float64, error) {
 	if !domain.SupportedCurrencies[base] {
 		return nil, fmt.Errorf("unsupported currency: %s", base)
 	}
@@ -38,4 +38,39 @@ func (s *ExchangeService) GetRates(base string) (map[string]float64, error) {
 	s.cache.Set(base, apiResp.ConversionRates)
 
 	return apiResp.ConversionRates, nil
+}
+
+func (s *ExchangeService) GetHistoricalRates(from, to string, date time.Time) (float64, error) {
+	if !domain.SupportedCurrencies[from] || !domain.SupportedCurrencies[to] {
+		return 0, fmt.Errorf("unsupported currency: %s or %s", from, to)
+	}
+
+	if time.Since(date) > 90*24*time.Hour {
+		return 0, fmt.Errorf("date %s too old: only last 90 days allowed", date.Format("2006-01-02"))
+	}
+
+	today := time.Now().Truncate(24 * time.Hour)
+	if date.Equal(today) {
+		rates, err := s.GetLatestRates(from)
+		if err != nil {
+			return 0, err
+		}
+		rate, ok := rates[to]
+		if !ok {
+			return 0, fmt.Errorf("rate not found for currency: %s", to)
+		}
+		return rate, nil
+	}
+
+	apiResp, err := infrastructure.FetchHistoricalRates(from, date)
+	if err != nil {
+		return 0, err
+	}
+
+	rate, ok := apiResp.ConversionRates[to]
+	if !ok {
+		return 0, fmt.Errorf("rate not found for currency: %s", to)
+	}
+
+	return rate, nil
 }
