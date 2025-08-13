@@ -1,0 +1,30 @@
+# VCS
+.git
+.gitignore
+
+# IDE/editor
+.vscode
+.idea
+*.swp
+
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+/bin
+/out
+/build
+/dist
+
+# Go
+**/vendor
+**/*.log
+**/*.tmp
+
+# Node/other
+node_modules
+
+# OS
+.DS_Store 
